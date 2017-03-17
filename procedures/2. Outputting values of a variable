@@ -1,0 +1,49 @@
+To build a dynamic and interactive PHP program, it is useful to output variables and their values. The PHP language allows for multiple methods of value output.
+This topic covers the standard methods of printing a value in PHP and where these methods can be used.
+
+echo and print are language constructs, not functions.
+This means that they don't require parentheses around the argument like a function does, although you can use them both ways: echo "test" and echo("test").
+They output the string representation of a variable, constant, or expression.
+
+Assign the string Joel to the variable $name
+
+$name = "Joel";
+
+Output the value of $name using echo & print
+
+echo $name;   #> Joel
+print $name;  #> Joel
+
+Parentheses are not required, but can be used
+
+echo($name);  #> Joel
+print($name); #> Joel
+
+Using multiple parameters (only echo)
+
+echo $name, "Smith";       #> JoelSmith
+echo($name, " ", "Smith"); #> Joel Smith
+
+print, unlike echo, is an expression (it returns 1), and thus can be used in more places:
+
+print("hey") && print(" ") && print("you"); #> you11
+
+The above is equivalent to:
+
+print ("hey" && (print (" " && print "you"))); #> you11
+
+Shorthand notation for echo
+
+When outside of PHP tags, a shorthand notation for echo is available by default, using <?= to begin output and ?> to end it. For example:
+
+<p><?=$variable?></p>    
+<p><?= "This is also PHP" ?></p>
+
+Note that there is no terminating ;. This works because the closing PHP tag acts as the terminator for the single statement. So, it is conventional to omit the semicolon in this shorthand notation.
+
+differences between echo and print
+
+In short there are two main differences:
+
+print only takes one parameter, while echo can have multiple parameters.
+print returns a value (1), so can be used as an expression.

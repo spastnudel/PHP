@@ -1,0 +1,82 @@
+SQL Injection/////
+Read in '3. PDO'
+
+PHP Version Leakage////////////
+
+By default, PHP will tell the world what version of PHP you are using, e.g.
+
+X-Powered-By: PHP/5.3.8
+To fix this you can either change php.ini:
+
+expose_php = off
+Or change the header:
+
+header("X-Powered-By: Magic");
+Or if you'd prefer a htaccess method:
+
+Header unset X-Powered-By
+If either of the above methods do not work, there is also the header_remove() function that provides you the ability to remove the header;
+
+header_remove('X-Powered-By');
+If attackers know that you are using PHP and the version of PHP that you are using, it's easier for them to exploit your server.
+
+
+
+Cross-site scripting////////////
+Cross-site scripting is the unintended execution of remote code by a web client.
+Any web application might expose itself to XSS if it takes input from a user and outputs it directly on a web page. 
+If input includes HTML or JavaScript, remote code can be executed when this content is rendered by the web client.
+
+For example, if a 3rd party side contains a JavaScript file:
+
+// http://example.com/runme.js
+document.write("I'm running");
+And a PHP application directly outputs a string passed into it:
+
+<?php
+echo '<div>' . $_GET['input'] . '</div>';
+If an unchecked GET parameter contains <script src="http://example.com/runme.js"></script> then the output of the PHP script will be:
+
+<div><script src="http://example.com/runme.js"></script></div>
+The 3rd party JavaScript will run and the user will see "I'm running" on the web page.
+
+Solution
+
+As a general rule, never trust input coming from a client. Every GET, POST, and cookie value could be anything at all, and should therefore be validated.
+When outputting any of these values, escape them so they will not be evaluated in an unexpected way.
+
+Keep in mind that even in the simplest applications data can be moved around and it will be hard to keep track of all sources.
+Therefore it is a best practice to always escape output.
+
+PHP provides a few ways to escape output depending on the context.
+
+HTML Encoding
+
+htmlspecialchars will convert any "HTML special characters" into their HTML encodings, meaning they will then not be processed as standard HTML.
+To fix our previous example using this method:
+
+<?php
+echo '<div>' . htmlspecialchars($_GET['input']) . '</div>';
+Would output:
+
+<div>&lt;script src=&quot;http://example.com/runme.js&quot;&gt;&lt;/script&gt;</div>
+Everything inside the <div> tag will not be interpreted as a JavaScript tag by the browser, but instead as a simple text node. The user will safely see:
+
+<script src="http://example.com/runme.js"></script>
+URL Encoding
+
+When outputting a dynamically generated URL, PHP provides the urlencode function to safely output valid URLs.
+So, for example, if a user is able to input data that becomes part of another GET parameter:
+
+<?php
+$input = urlencode($_GET['input']);
+echo '<a href="http://example.com/page?input="' . $input . '">Link</a>';
+Any malicious input will be converted to an encoded URL parameter.
+
+Using specialised external libraries or OWASP AntiSamy lists
+
+Sometimes you will want to send HTML or other kind of code inputs. You will need to maintain a list of authorised words (white list) and un-authorized (blacklist).
+
+You can download standard lists available at the OWASP AntiSamy website. Each list is fit for a specific kind of interaction (ebay api, tinyMCE, etc...). And it is open source.
+
+There are libraries existing to filter HTML and prevent XSS attacks for the general case and performing at least as well as AntiSamy lists with very easy use.

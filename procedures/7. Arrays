@@ -1,0 +1,105 @@
+An array is a special variable, which can hold more than one value at a time. An array in PHP is actually an ordered map, where map is a type that associates values to keys.
+
+An array can be initialized empty:
+
+$foo = array();
+
+
+// Shorthand notation
+$foo = [];
+
+An array can be initialized and preset with values:
+
+// Creates a simple array with three strings
+$fruit = array('apples', 'pears', 'oranges');
+
+// Shorthand notation
+$fruit = ['apples', 'pears', 'oranges'];
+
+An array can also be initialized with custom indexes (also called an associative array):
+
+// A simple associative array
+$fruit = array(
+   'first'  => 'apples',
+   'second' => 'pears', 
+   'third'  => 'oranges'
+);
+
+// Key and value can also be set as follows
+$fruit['first'] = 'apples';
+
+// Shorthand notation available since PHP 5.4
+$fruit = [
+    'first'  => 'apples', 
+    'second' => 'pears', 
+    'third'  => 'oranges'
+];
+
+If the variable hasn't been used before, PHP will create it automatically. While convenient, this might make the code harder to read:
+
+$foo[] = 1;     // Array( [0] => 1 )
+$bar[][] = 2;   // Array( [0] => Array( [0] => 2 ) )
+
+The index will usually continue where you left off. PHP will try to use numeric strings as integers:
+
+$foo = [2 => 'apple', 'melon'];  // Array( [2] => apple, [3] => melon )
+$foo = ['2' => 'apple', 'melon']; // same as above
+$foo = [2 => 'apple', 'this is index 3 temporarily', '3' => 'melon']; // same as above! The last entry will overwrite the second!
+
+To initialize an array with fixed size you can use SplFixedArray:
+
+$array = new SplFixedArray(3);
+
+$array[0] = 1;
+$array[1] = 2;
+$array[2] = 3;
+$array[3] = 4; // RuntimeException
+
+// Increase the size of the array to 10
+$array->setSize(10);
+Note : an array created using SplFixedArray has a reduced memory footprint for large sets of data, but the keys must be integers.
+
+
+To initialize an array with a dynamic size but with n non empty elements (e.g. a placeholder) you can use a loop as follows:
+
+$myArray = array();
+$sizeOfMyArray = 5;
+$fill = 'placeholder';
+
+for ($i = 0; $i < $sizeOfMyArray; $i++) {
+  $myArray[] = $fill;
+}
+
+// print_r($myArray); results in the following:
+// Array ( [0] => placeholder [1] => placeholder [2] => placeholder [3] => placeholder [4] => placeholder ) 
+
+If all your placeholders are the same then you can also create it using the function array_fill():
+
+array array_fill ( int $start_index , int $num , mixed $value )
+This creates and returns an array with num entries of value, keys starting at start_index.
+
+Note: If the start_index is negative it will start with the negative index and continue from 0 for the following elements.
+
+$a = array_fill(5, 6, 'banana'); // Array ( [5] => banana, [6] => banana, ..., [10] => banana)
+$b = array_fill(-2, 4, 'pear'); // Array ( [-2] => pear, [0] => pear, ..., [2] => pear)
+Conclusion: With array_fill() you are more limited for what you can actually do. The loop is more flexible and opens you a wider range of opportunities.
+
+Whenever you want an array filled with a range of numbers (e.g. 1-4) you could either append every single element to an array or use the range() function:
+
+array range ( mixed $start , mixed $end [, number $step = 1 ] )
+This function creates an array containing a range of elements. The first two parameters are required, where they set the start and end points of the (inclusive) range.
+The third parameter is optional and defines the size of the steps being taken.
+Creating a range from 0 to 4 with a stepsize of 1, the resulting array would consist of the following elements: 0, 1, 2, 3, and 4.
+If the step size is increased to 2 (i.e. range(0, 4, 2)) then the resulting array would be: 0, 2, and 4.
+
+$array = [];
+$array_with_range = range(1, 4);
+
+for ($i = 1; $i <= 4; $i++) {
+    $array[] = $i;
+}
+    
+print_r($array); // Array ( [0] => 1 [1] => 2 [2] => 3 [3] => 4 )
+print_r($array_with_range); // Array ( [0] => 1 [1] => 2 [2] => 3 [3] => 4 )
+range can work with integers, floats, booleans (which become casted to integers), and strings.
+Caution should be taken, however, when using floats as arguments due to the floating point precision problem.

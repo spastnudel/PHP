@@ -1,0 +1,55 @@
+The PDO (PHP Data Objects) extension allows developers to connect to numerous different types of databases and execute queries against them in a uniform, object oriented manner.
+
+SQL injection is a kind of attack that allows a malicious user to modify the SQL query, adding unwanted commands to it.
+
+For example, the following code is vulnerable:
+
+$sql = 'SELECT name, email, user_level FROM users WHERE userID = ' . $_GET['user'];
+$conn->query($sql);
+
+This allows any user of this script to modify our database basically at will. For example consider the following query string:
+
+page.php?user=0;%20TRUNCATE%20TABLE%20users;
+This makes our example query look like this
+
+SELECT name, email, user_level FROM users WHERE userID = 0; TRUNCATE TABLE users;
+
+While this is an extreme example (most SQL injection attacks do not aim to delete data, nor do most PHP query execution functions support multi-query),
+this is an example of how a SQL injection attack can be made possible by the careless assembly of the query.
+
+Unfortunately, attacks like this are very common, and are highly effective due to coders who fail to take proper precautions to protect their data.
+
+To prevent SQL injection from occurring, prepared statements are the recommended solution. Instead of concatenating user data directly to the query, a placeholder is used instead.
+The data is then sent separately, which means there is no chance of the SQL engine confusing user data for a set of instructions.
+While the topic here is PDO, please note that the PHP MySQLi extension also supports prepared statements
+PDO supports two kinds of placeholders (placeholders cannot be used for column or table names, only values):
+
+Named placeholders. A colon(:), followed by a distinct name (eg. :user)
+
+// using named placeholders
+$sql = 'SELECT name, email, user_level FROM users WHERE userID = :user';
+$prep = $conn->prepare($sql);
+$prep->execute([':user' => $_GET['user']]); // associative array
+$result = $prep->fetchAll();
+
+Traditional SQL positional placeholders, represented as ?:
+
+// using question-mark placeholders
+$sql = 'SELECT name, user_level FROM users WHERE userID = ? AND user_level = ?';
+$prep = $conn->prepare($sql);
+$prep->execute([$_GET['user'], $_GET['user_level']]); // indexed array
+$result = $prep->fetchAll();
+
+If ever you need to dynamically change table or column names, know that this is at your own security risks and a bad practice.
+Though, it can be done by string concatenation.
+One way to improve security of such queries is to set a table of allowed values and compare the value you want to concatenate to this table.
+
+Be aware that it is important to set connection charset through DSN only, otherwise your application could be prone to an obscure vulnerability if some odd encoding is used.
+For PDO versions prior to 5.3.6 setting charset through DSN is not available and thus the only option is to set PDO::ATTR_EMULATE_PREPARES attribute to 
+false on the connection right after it’s created.
+
+$conn->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+
+This causes PDO to use the underlying DBMS’s native prepared statements instead of just emulating it.
+
+However, be aware that PDO will silently fallback to emulating statements that MySQL cannot prepare natively: those that it can are listed in the manual.

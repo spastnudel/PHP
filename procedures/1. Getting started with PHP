@@ -1,0 +1,41 @@
+Getting started with PHP/////////////////
+
+PHP can be used to add content to HTML files. While HTML is processed directly by a web browser, PHP scripts are executed by a web server and the resulting HTML is sent to the browser.
+The following HTML markup contains a PHP statement that will add Hello World! to the output:
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PHP!</title>
+    </head>
+    <body>
+        <p><?php echo "Hello world!"; ?></p>
+    </body>
+</html>
+
+
+When this is saved as a PHP script and executed by a web server, the following HTML will be sent to the user's browser:
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>PHP!</title>
+    </head>
+    <body>
+        <p>Hello world!</p>
+    </body>
+</html>
+
+
+PHP 5.x5.4
+
+echo also has a shortcut syntax (http://php.net/manual/en/ini.core.php#ini.short-open-tag ), which lets you immediately print a value. Prior to PHP 5.4.0, this short syntax only works with the short_open_tag configuration setting enabled. For example,
+
+<p><?= "Hello world!" ?></p>
+
+is same as the below line:
+
+<p><?php echo "Hello world!"; ?></p>
+
+
+In real-world applications, all data output by PHP to an HTML page should be properly escaped to prevent XSS (Cross-site scripting) attacks or text corruption.

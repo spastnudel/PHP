@@ -1,0 +1,85 @@
+Variables can be accessed via dynamic variable names. The name of a variable can be stored in another variable, allowing it to be accessed dynamically.
+Such variables are known as variable variables.
+
+To turn a variable into a variable variable, you put an extra $ put in front of your variable.
+
+$variableName = 'foo';
+$foo = 'bar';
+
+// The following are all equivalent, and all output "bar":
+echo $foo;
+echo ${$variableName};
+echo $$variableName;
+
+//similarly,
+$variableName  = 'foo';
+$$variableName = 'bar';
+
+// The following statements will also output 'bar'
+echo $foo; 
+echo $$variableName; 
+echo ${$variableName};
+Variable variables are useful for mapping function/method calls:
+
+function add($a, $b) {
+    return $a + $b;
+}
+
+$funcName = 'add';
+
+echo $funcName(1, 2); // outputs 3
+This becomes particularly helpful in PHP classes:
+
+class myClass {
+    public function __construct() {
+        $functionName = 'doSomething';
+        $this->$functionName('Hello World');
+    }
+
+    private function doSomething($string) {
+        echo $string; // Outputs "Hello World"
+    }
+}
+It is possible, but not required to put $variableName between {}:
+
+${$variableName} = $value;
+The following examples are both equivalent and output "baz":
+
+$fooBar = 'baz';
+$varPrefix = 'foo';
+
+echo $fooBar;               // Outputs "baz"
+echo ${$varPrefix . 'Bar'}; // Also outputs "baz"
+Using {} is only mandatory when the name of the variable is itself an expression, like this:
+
+${$variableNamePart1 . $variableNamePart2} = $value;
+It is nevertheless recommended to always use {}, because it's more readable.
+
+While it is not recommended to do so, it is possible to chain this behavior:
+
+$$$$$$$$DoNotTryThisAtHomeKids = $value;
+It's important to note that the excessive usage of variable variables is considered a bad practice by many developers.
+Since they're not well-suited for static analysis by modern IDEs, large codebases with many variable variables (or dynamic method invocations) can quickly become difficult to maintain.
+Differences between PHP5 and PHP7
+
+Another reason to always use {} or (), is that PHP5 and PHP7 have a slightly different way of dealing with dynamic variables, which results in a different outcome in some cases.
+
+In PHP7, dynamic variables, properties, and methods will now be evaluated strictly in left-to-right order, as opposed to the mix of special cases in PHP5.
+The examples below show how the order of evaluation has changed.
+
+Case 1 : $$foo['bar']['baz']
+
+PHP5 interpretation : ${$foo['bar']['baz']}
+PHP7 interpretation : ($$foo)['bar']['baz']
+Case 2 : $foo->$bar['baz']
+
+PHP5 interpretation : $foo->{$bar['baz']}
+PHP7 interpretation : ($foo->$bar)['baz']
+Case 3 : $foo->$bar['baz']()
+
+PHP5 interpretation : $foo->{$bar['baz']}()
+PHP7 interpretation : ($foo->$bar)['baz']()
+Case 4 : Foo::$bar['baz']()
+
+PHP5 interpretation : Foo::{$bar['baz']}()
+PHP7 interpretation : (Foo::$bar)['baz']()

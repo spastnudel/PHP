@@ -1,0 +1,132 @@
+JSON (JavaScript Object Notation) is a platform and language independent way of serializing objects into plaintext.
+Because it is often used on web and so is PHP, there is a basic extension for working with JSON in PHP.
+
+The json_decode() function takes a JSON-encoded string as its first parameter and parses it into a PHP variable.
+
+Normally, json_decode() will return an object of \stdClass if the top level item in the JSON object is a dictionary or an indexed array if the JSON object is an array.
+It will also return scalar values or NULL for certain scalar values, such as simple strings, "true", "false", and "null". It also returns NULL on any error.
+
+// Returns an object (The top level item in the JSON string is a JSON dictionary)
+$json_string = '{"name": "Jeff", "age": 20, "active": true, "colors": ["red", "blue"]}';
+$object = json_decode($json_string);
+printf('Hello %s, You are %s years old.', $object->name, $object->age);
+#> Hello Jeff, You are 20 years old.
+
+// Returns an array (The top level item in the JSON string is a JSON array)
+$json_string = '["Jeff", 20, true, ["red", "blue"]]';
+$array = json_decode($json_string);
+printf('Hello %s, You are %s years old.', $array[0], $array[1]);
+Use var_dump() to view the types and values of each property on the object we decoded above.
+
+// Dump our above $object to view how it was decoded
+var_dump($object);
+
+# Output: Note the variable 'types'
+class stdClass#2 (4) {
+ ["name"] => string(4) "Jeff"
+ ["age"] => int(20)
+ ["active"] => bool(true)
+ ["colors"] =>
+   array(2) {
+     [0] => string(3) "red"
+     [1] => string(4) "blue"
+   }
+}
+Note: The variable types in JSON were converted to their PHP equivalent.
+
+To return an associative array for JSON objects instead of returning an object, pass true as the second parameter to json_decode().
+
+$json_string = '{"name": "Jeff", "age": 20, "active": true, "colors": ["red", "blue"]}';
+$array = json_decode($json_string, true); // Note the second parameter
+var_dump($array);
+
+# Output: Note the array associative structure
+array(4) {
+  ["name"] => string(4) "Jeff"
+  ["age"] => int(20)
+  ["active"] => bool(true)
+  ["colors"] =>
+  array(2) {
+    [0] => string(3) "red"
+    [1] => string(4) "blue"
+  }
+}
+The second parameter ($assoc) has no effect if the variable to be returned is not an object.
+
+Note: If you use the $assoc parameter, you will lose the distinction between an empty array and an empty object.
+This means that running json_encode() on your decoded output again, will result in a different JSON structure.
+
+If the JSON string has a "depth" more than 512 elements (20 elements in versions older than 5.2.3, or 128 in version 5.2.3) in recursion, the function json_decode() returns NULL.
+In versions 5.3 or later, this limit can be controlled using the third parameter ($depth), as discussed below.
+
+According to the manual:
+
+PHP implements a superset of JSON as specified in the original » RFC 4627 - it will also encode and decode scalar types and NULL.
+RFC 4627 only supports these values when they are nested inside an array or an object. 
+Although this superset is consistent with the expanded definition of "JSON text" in the newer » RFC 7159 (which aims to supersede RFC 4627) and » ECMA-404, 
+this may cause interoperability issues with older JSON parsers that adhere strictly to RFC 4627 when encoding a single scalar value.
+This means, that, for example, a simple string will be considered to be a valid JSON object in PHP:
+
+$json = json_decode('"some string"', true);
+var_dump($json, json_last_error_msg());
+Output:
+
+string(11) "some string"
+string(8) "No error"
+But simple strings, not in an array or object, are not part of the RFC 4627 standard. As a result, such online checkers as JSLint, JSON Formatter & Validator (in RFC 4627 mode) will give you an error.
+
+There is a third $depth parameter for the depth of recursion (the default value is 512), which means the amount of nested objects inside the original object to be decoded.
+
+There is a fourth $options parameter. It currently accepts only one value, JSON_BIGINT_AS_STRING. The default behavior (which leaves off this option) is to cast large integers to floats instead of strings.
+
+Invalid non-lowercased variants of the true, false and null literals are no longer accepted as valid input.
+So this example:
+
+var_dump(json_decode('tRue'), json_last_error_msg());
+var_dump(json_decode('tRUe'), json_last_error_msg());
+var_dump(json_decode('tRUE'), json_last_error_msg());
+var_dump(json_decode('TRUe'), json_last_error_msg());
+var_dump(json_decode('TRUE'), json_last_error_msg());
+var_dump(json_decode('true'), json_last_error_msg());
+Before PHP 5.6:
+
+bool(true)
+string(8) "No error"
+bool(true)
+string(8) "No error"
+bool(true)
+string(8) "No error"
+bool(true)
+string(8) "No error"
+bool(true)
+string(8) "No error"
+bool(true)
+string(8) "No error"
+And after:
+
+NULL
+string(12) "Syntax error"
+NULL
+string(12) "Syntax error"
+NULL
+string(12) "Syntax error"
+NULL
+string(12) "Syntax error"
+NULL
+string(12) "Syntax error"
+bool(true)
+string(8) "No error"
+Similar behavior occurs for false and null.
+
+Note that json_decode() will return NULL if the string cannot be converted.
+
+$json = "{'name': 'Jeff', 'age': 20 }" ;  // invalid json 
+
+$person = json_decode($json);
+echo $person->name;    //  Notice: Trying to get property of non-object: returns null
+echo json_last_error();     
+#  4 (JSON_ERROR_SYNTAX)
+echo json_last_error_msg(); 
+#  unexpected character 
+It is not safe to rely only on the return value being NULL to detect errors.
+For example, if the JSON string contains nothing but "null", json_decode() will return null, even though no error occurred.
